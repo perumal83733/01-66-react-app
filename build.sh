@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker build -t perumaloo7
+docker build -t perumaloo7 .
