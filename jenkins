@@ -1,0 +1,53 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-cred-perumal')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/perumal83733/01-66-react-app.git'
+            }
+        }
+
+        stage('Grant Permissions') {
+            steps {
+                sh 'chmod +x build.sh'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    sh './build.sh'
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-cred-perumal', usernameVariable: 'DOCKERHUB_CREDENTIALS_USR', passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW')]) {
+                        sh "echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin"
+                    }
+                    
+   
+                    sh "docker tag calc perumal007/task01" 
+                    
+                    sh "docker push perumal007/task01" 
+                }
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                script {
+                    
+                    sh 'docker run -itd -p 8082:80 perumal007/task01' 
+                }
+            }
+        }
+    }
+}
